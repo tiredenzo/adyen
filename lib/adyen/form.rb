@@ -300,6 +300,46 @@ module Adyen
     end
 
     ######################################################
+    # REDIRECT RESPONSE
+    ######################################################
+
+    class ForgedResponse < StandardError
+    end
+
+    class Response
+      attr_reader :attributes
+
+      def initialize(params)
+        @attributes = params
+      end
+
+      def [](attribute)
+        attributes[Adyen::Util.camelize(attribute)]
+      end
+
+      def has_attribute?(attribute)
+        attributes.has_key?(Adyen::Util.camelize(attribute))
+      end
+
+      def psp_reference
+        @psp_reference ||= Integer(attributes['pspReference'])
+      end
+
+      def merchant_reference
+        attributes['merchantReference']
+      end
+
+      def authorised?
+        attributes['authResult'] == 'AUTHORISED'
+      end
+    end
+
+    def redirect_response(params, shared_secret = nil)
+      raise ForgedResponse, "Forged response: the signature does not match the parameters" unless redirect_signature_check(params, shared_secret)
+      Response.new(params)
+    end
+
+    ######################################################
     # REDIRECT SIGNATURE CHECKING
     ######################################################
 

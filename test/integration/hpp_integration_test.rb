@@ -43,6 +43,8 @@ class HPPIntegrationTest < Minitest::Test
     assert_equal order_uuid, find("#merchant_reference").text
   end
 
+  private
+
   def follow_redirect_back
     uri = URI(page.current_url.gsub('%25', '%'))
     assert_equal 'example.com', uri.host

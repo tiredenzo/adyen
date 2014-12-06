@@ -38,18 +38,17 @@ class Adyen::ExampleServer < Sinatra::Base
   end
 
   get '/hpp/result' do
-    raise "Forgery!" unless Adyen::Form.redirect_signature_check(params)
+    response = Adyen::Form.redirect_response(params)
 
-    case params['authResult']
-    when 'AUTHORISED'
+    if response.authorised?
       @attributes = {
-        psp_reference: params['pspReference'],
-        merchant_reference: params['merchantReference'],
+        psp_reference: response.psp_reference,
+        merchant_reference: response.merchant_reference,
       }
       erb :authorized
     else
       status 400
-      body params['authResult']
+      body response[:auth_result]
     end
   end
 
